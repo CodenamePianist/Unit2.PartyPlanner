@@ -17,11 +17,49 @@ async function getEvents() {
     }
 }
 
+function convertISOStringToDate() {
+    for (let i = 0; i < state.events.length; i++) {
+        const date = state.events[i].date;
+        const dateArray = date.split("T");
+        return dateArray[0];
+    }
+}
+
+function convertISOStringToTime() {
+    for (let i = 0; i < state.events.length; i++) {
+        const date = state.events[i].date;
+        const dateArray = date.split("T");
+        const time = dateArray[1].slice(0, -8);
+        return time;
+    }
+
+}
+
+const eventDate = convertISOStringToDate();
+const eventTime = convertISOStringToTime();
+
 // === Render ===
 
+function renderEvents() {
+    const $events = document.querySelector("#events");
+
+    const eventCards = state.events.map((event) => {
+        const card = document.createElement("li");
+        card.innerHTML = `
+            <h2>${event.name}</h2>
+            <p>${event.eventDate}</p>
+            <p>${eventTime}</p>
+            <p>${event.location}</p>
+            <p>${event.description}</p>
+        `;
+        return card;
+    })
+    $events.replaceChildren(...eventCards);
+}
 
 async function render() {
     await getEvents();
+    renderEvents();
 }
 
 // === Script ===
