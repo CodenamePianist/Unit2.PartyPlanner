@@ -11,18 +11,22 @@ async function getEvents() {
     try {
         const response = await fetch(API_URL);
         const responseObj = await response.json();
+
+        if (!response.ok) {
+            throw new Error(parsed.error.message);
+        }
         state.events = responseObj.data;
     } catch (error) {
         console.error(error);
     }
 }
 
-async function addEvent(artist) {
+async function addEvent(event) {
     try {
         const response = await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(artist)
+            body: JSON.stringify(event)
         });
         const json = await response.json();
 
@@ -38,7 +42,12 @@ async function deleteEvent(id) {
     try {
         const response = await fetch(API_URL + id, {
             method: "DELETE",
-        })
+        });
+
+        if (!response.ok) {
+            const parsed = await response.json();
+            throw new Error(parsed.error.message);
+        };
     } catch (error) {
         console.error(error);
     }
@@ -76,8 +85,7 @@ function renderEvents() {
         const card = document.createElement("li");
         card.innerHTML = `
             <h2>${event.name}</h2>
-            <p>${event.eventDate}</p>
-            <p>${eventTime}</p>
+            <p>${event.date}</p>
             <p>${event.location}</p>
             <p>${event.description}</p>
             <button>Delete</button>
@@ -103,4 +111,23 @@ async function render() {
 // === Script ===
 
 render();
+
+const $form = document.querySelector("form");
+$form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const isoDate = new Date($form.eventDate.value).toISOString();
+
+    const party = {
+        name: $form.eventName.value,
+        date: isoDate,
+        location: $form.eventLocation.value,
+        description: $form.description.value
+    }
+
+    await addEvent(party);
+
+    await getEvents();
+    render();
+})
 
