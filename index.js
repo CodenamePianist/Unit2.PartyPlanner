@@ -17,6 +17,35 @@ async function getEvents() {
     }
 }
 
+async function addEvent(artist) {
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(artist)
+        });
+        const json = await response.json();
+
+        if (json.error) {
+            throw new Error(json.error.message);
+        }
+    } catch (error) {
+        console.error(error)
+    }
+}
+
+async function deleteEvent(id) {
+    try {
+        const response = await fetch(API_URL + id, {
+            method: "DELETE",
+        })
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+
+
 function convertISOStringToDate() {
     for (let i = 0; i < state.events.length; i++) {
         const date = state.events[i].date;
@@ -51,7 +80,16 @@ function renderEvents() {
             <p>${eventTime}</p>
             <p>${event.location}</p>
             <p>${event.description}</p>
+            <button>Delete</button>
         `;
+
+        const $deleteButton = card.querySelector("button");
+        $deleteButton.addEventListener("click", async () => {
+            await deleteEvent(event.id);
+            await getEvents();
+            renderEvents();
+        });
+
         return card;
     })
     $events.replaceChildren(...eventCards);
@@ -65,3 +103,4 @@ async function render() {
 // === Script ===
 
 render();
+
